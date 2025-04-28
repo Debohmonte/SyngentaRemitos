@@ -15,7 +15,7 @@ document.getElementById('generateBtn').addEventListener('click', async function(
 
   for (let index = 0; index < json.length; index++) {
     const row = json[index];
-    if (!row['Cliente:.1']) continue; // Saltar filas vacías
+    if (!row['Cliente:']) continue; // Saltar filas vacías
 
     // Crear un DIV temporal invisible para generar el PDF
     const div = document.createElement('div');
@@ -24,9 +24,9 @@ document.getElementById('generateBtn').addEventListener('click', async function(
       <div class="remito">
         <h1>Remito N° ${row['Número Interno:'] || '(sin número)'}</h1>
         <p><strong>Fecha de Emisión:</strong> ${row['Fecha de Emisión:']}</p>
-        <p><strong>Cliente:</strong> ${row['Cliente:.1']}</p>
+        <p><strong>Cliente:</strong> ${row['Cliente:']}</p>
         <p><strong>Dirección:</strong> ${row['Dirección:']}</p>
-        <p><strong>CUIT:</strong> ${row['C.U.I.T.:.1']}</p>
+        <p><strong>CUIT:</strong> ${row['C.U.I.T.:']}</p>
         <p><strong>Pedido:</strong> ${row['Pedido:']}</p>
         <h3>Productos</h3>
         <p><strong>Código:</strong> ${row['Código:']} - ${row['Descripción:']}</p>
