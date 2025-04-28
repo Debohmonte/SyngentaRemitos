@@ -16,7 +16,9 @@ document.getElementById('generateBtn').addEventListener('click', async function(
   json.forEach((row, index) => {
     if (!row['Cliente:.1']) return; // Saltar filas vacías
 
-    // Crear el contenido del remito
+    // Abrimos la nueva pestaña
+    const nuevaPestana = window.open('', '_blank');
+
     const contenido = `
       <html>
       <head>
@@ -51,17 +53,5 @@ document.getElementById('generateBtn').addEventListener('click', async function(
         <script>
           function descargarPDF() {
             const remito = document.getElementById('remito');
-            html2pdf().from(remito).save('remito_${row['Número Interno:'] || index + 1}.pdf');
-          }
-        </script>
-      </body>
-      </html>
-    `;
+            html2pdf().from(remito).save('remito_${row['Número Int_
 
-    // Abrir nueva pestaña y escribir el contenido
-    const nuevaPestana = window.open('', '_blank');
-    nuevaPestana.document.open();
-    nuevaPestana.document.write(contenido);
-    nuevaPestana.document.close();
-  });
-});
