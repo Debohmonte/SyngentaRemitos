@@ -5,7 +5,7 @@ document.getElementById('generateBtn').addEventListener('click', async function(
         return;
     }
 
-    const { jsPDF } = window.jspdf; // ✅ IMPORTANTE
+    const { jsPDF } = window.jspdf; // ✅ Importar correctamente jsPDF
     const file = input.files[0];
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data);
@@ -19,6 +19,9 @@ document.getElementById('generateBtn').addEventListener('click', async function(
         return;
     }
 
+    // Crear 1 solo documento para todos los remitos
+    const doc = new jsPDF();
+
     for (let index = 0; index < json.length; index++) {
         const row = json[index];
         if (!row || Object.keys(row).length === 0) continue;
@@ -31,7 +34,9 @@ document.getElementById('generateBtn').addEventListener('click', async function(
 
         if (!dataRow['Cliente Recptor:']) continue;
 
-        const doc = new jsPDF(); // ✅ Ahora sí funciona
+        if (index !== 0) {
+            doc.addPage(); // 👉 Cada remito empieza en nueva página
+        }
 
         // Títulos
         doc.setFontSize(16);
@@ -71,8 +76,9 @@ document.getElementById('generateBtn').addEventListener('click', async function(
         doc.setFontSize(8);
         doc.text('La mercadería será transportada bajo exclusiva responsabilidad del transportista.', 20, 280);
         doc.text('Jurisdicción Rosario - Santa Fe. No válido como factura.', 20, 285);
-
-        // Guardar
-        doc.save(`remito_${dataRow['Número Interno:'] || (index + 1)}.pdf`);
     }
+
+    // ✅ Descargar 1 solo PDF final con todos los remitos
+    doc.save('Remitos_Syngenta.pdf');
 });
+
