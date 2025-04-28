@@ -9,7 +9,7 @@ document.getElementById('generateBtn').addEventListener('click', async function(
   const data = await file.arrayBuffer();
   const workbook = XLSX.read(data);
 
-  const sheetName = workbook.SheetNames[0]; // Primera hoja
+  const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
   const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
@@ -20,32 +20,32 @@ document.getElementById('generateBtn').addEventListener('click', async function(
 
   for (let index = 0; index < json.length; index++) {
     const row = json[index];
-    if (!row['Cliente']) continue; // Saltar filas vacías
+    if (!row['Cliente Recptor:']) continue; // Saltar filas vacías
 
     // Crear un DIV temporal invisible para generar el PDF
     const div = document.createElement('div');
     div.style.display = 'none';
     div.innerHTML = `
       <div class="remito">
-        <h1>Remito N° ${row['Número Interno'] || '(sin número)'}</h1>
-        <p><strong>Fecha de Emisión:</strong> ${row['Fecha de Emisión']}</p>
-        <p><strong>Cliente:</strong> ${row['Cliente']}</p>
-        <p><strong>Dirección:</strong> ${row['Dirección']}</p>
-        <p><strong>CUIT:</strong> ${row['CUIT']}</p>
-        <p><strong>Pedido:</strong> ${row['Pedido']}</p>
+        <h1>Remito N° ${row['Número Interno:'] || '(sin número)'}</h1>
+        <p><strong>Fecha de Emisión:</strong> ${row['Fecha de Emisión:']}</p>
+        <p><strong>Cliente:</strong> ${row['Cliente Recptor:']}</p>
+        <p><strong>Dirección:</strong> ${row['Dirección:']}</p>
+        <p><strong>CUIT:</strong> ${row['C.U.I.T. RECPTOR:']}</p>
+        <p><strong>Pedido:</strong> ${row['Pedido:']}</p>
         <h3>Productos</h3>
-        <p><strong>Código:</strong> ${row['Código']} - ${row['Descripción']}</p>
-        <p><strong>Cantidad:</strong> ${row['Cantidad']}</p>
-        <p><strong>Peso Estimado Total:</strong> ${row['Peso Estimado Total']}</p>
-        <p><strong>Lotes:</strong> ${row['Lotes']}</p>
+        <p><strong>Código:</strong> ${row['Código:']} - ${row['Descripción:']}</p>
+        <p><strong>Cantidad:</strong> ${row['Cantidad:']}</p>
+        <p><strong>Peso Estimado Total:</strong> ${row['PESO ESTIMADO TOTAL: ']}</p>
+        <p><strong>Lotes:</strong> ${row['Lotes:']}</p>
         <h3>Transporte</h3>
-        <p><strong>Número:</strong> ${row['Número de Transporte']} - <strong>Nombre:</strong> ${row['Transporte']}</p>
+        <p><strong>Número:</strong> ${row['Nro. Transporte:']} - <strong>Nombre:</strong> ${row['Transporte:']}</p>
       </div>
     `;
     document.body.appendChild(div);
 
     await html2pdf().from(div).set({
-      filename: `remito_${row['Número Interno'] || index + 1}.pdf`,
+      filename: `remito_${row['Número Interno:'] || index + 1}.pdf`,
       margin: 10,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
