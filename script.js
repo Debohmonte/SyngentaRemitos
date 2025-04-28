@@ -9,7 +9,7 @@ document.getElementById('generateBtn').addEventListener('click', async function(
   const data = await file.arrayBuffer();
   const workbook = XLSX.read(data);
 
-  const sheetName = workbook.SheetNames[1]; // Hoja 2
+  const sheetName = workbook.SheetNames[0]; // Hoja 2
   const worksheet = workbook.Sheets[sheetName];
   const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
