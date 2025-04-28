@@ -31,49 +31,38 @@ document.getElementById('generateBtn').addEventListener('click', async function(
 
     if (!dataRow['Cliente Recptor:']) continue;
 
-    // Crear un div visible pero pequeño
-    const div = document.createElement('div');
-    div.style.position = 'absolute';
-    div.style.top = '0';
-    div.style.left = '0';
-    div.style.width = '800px';
-    div.style.height = 'auto';
-    div.style.background = 'white';
-    div.style.zIndex = '9999';
-    div.style.opacity = '1'; // Ahora visible
-    div.style.padding = '20px';
-    div.innerHTML = `
-      <div class="remito" style="font-family: Arial, sans-serif;">
-        <h1>Remito N° ${dataRow['Número Interno:'] || '(sin número)'}</h1>
-        <p><strong>Fecha de Emisión:</strong> ${dataRow['Fecha de Emisión:']}</p>
-        <p><strong>Cliente:</strong> ${dataRow['Cliente Recptor:']}</p>
-        <p><strong>Dirección:</strong> ${dataRow['Dirección receptor:']}</p>
-        <p><strong>CUIT:</strong> ${dataRow['C.U.I.T. RECPTOR:']}</p>
-        <p><strong>Pedido:</strong> ${dataRow['Pedido:']}</p>
-        <h3>Productos</h3>
-        <p><strong>Código:</strong> ${dataRow['Código:']} - ${dataRow['Descripción:']}</p>
-        <p><strong>Cantidad:</strong> ${dataRow['Cantidad:']}</p>
-        <p><strong>Peso Estimado Total:</strong> ${dataRow['PESO ESTIMADO TOTAL:']}</p>
-        <p><strong>Lotes:</strong> ${dataRow['Lotes:']}</p>
-        <h3>Transporte</h3>
-        <p><strong>Número:</strong> ${dataRow['Nro. Transporte:']} - <strong>Nombre:</strong> ${dataRow['Transporte:']}</p>
-      </div>
-    `;
-    document.body.appendChild(div);
+    // Crear PDF usando jsPDF
+    const pdf = new jspdf.jsPDF();
 
-    // 🔥 Esperar más tiempo para que se renderice bien
-    await new Promise(resolve => setTimeout(resolve, 500));
+    pdf.setFontSize(16);
+    pdf.text(`Remito N° ${dataRow['Número Interno:'] || '(sin número)'}`, 20, 20);
 
-    await html2pdf().from(div).set({
-      filename: `remito_${dataRow['Número Interno:'] || index + 1}.pdf`,
-      margin: 10,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    }).save();
+    pdf.setFontSize(12);
+    pdf.text(`Fecha de Emisión: ${dataRow['Fecha de Emisión:'] || ''}`, 20, 40);
+    pdf.text(`Cliente: ${dataRow['Cliente Recptor:'] || ''}`, 20, 50);
+    pdf.text(`Dirección: ${dataRow['Dirección receptor:'] || ''}`, 20, 60);
+    pdf.text(`CUIT: ${dataRow['C.U.I.T. RECPTOR:'] || ''}`, 20, 70);
+    pdf.text(`Pedido: ${dataRow['Pedido:'] || ''}`, 20, 80);
 
-    // Eliminar el div después de generar
-    document.body.removeChild(div);
+    pdf.setFontSize(14);
+    pdf.text('Productos:', 20, 100);
+
+    pdf.setFontSize(12);
+    pdf.text(`Código: ${dataRow['Código:'] || ''}`, 20, 110);
+    pdf.text(`Descripción: ${dataRow['Descripción:'] || ''}`, 20, 120);
+    pdf.text(`Cantidad: ${dataRow['Cantidad:'] || ''}`, 20, 130);
+    pdf.text(`Peso Estimado Total: ${dataRow['PESO ESTIMADO TOTAL:'] || ''}`, 20, 140);
+    pdf.text(`Lotes: ${dataRow['Lotes:'] || ''}`, 20, 150);
+
+    pdf.setFontSize(14);
+    pdf.text('Transporte:', 20, 170);
+
+    pdf.setFontSize(12);
+    pdf.text(`Nro. Transporte: ${dataRow['Nro. Transporte:'] || ''}`, 20, 180);
+    pdf.text(`Nombre Transporte: ${dataRow['Transporte:'] || ''}`, 20, 190);
+
+    // Guardar el PDF
+    pdf.save(`remito_${dataRow['Número Interno:'] || index + 1}.pdf`);
   }
 });
 
