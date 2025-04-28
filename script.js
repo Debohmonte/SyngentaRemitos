@@ -21,25 +21,26 @@ document.getElementById('generateBtn').addEventListener('click', async function(
   for (let index = 0; index < json.length; index++) {
     const row = json[index];
 
-    if (!row || Object.keys(row).length === 0) continue; // Saltar filas vacías
+    if (!row || Object.keys(row).length === 0) continue;
 
-    // Normalizar claves
     const dataRow = {};
     for (const key in row) {
-      const normalizedKey = key.trim(); // quitar espacios al principio y final
+      const normalizedKey = key.trim();
       dataRow[normalizedKey] = row[key];
     }
 
-    if (!dataRow['Cliente Recptor:']) continue; // ahora seguro
+    if (!dataRow['Cliente Recptor:']) continue;
 
-    // Crear un div visible para capturar
+    // Crear un div visible pero pequeño
     const div = document.createElement('div');
-    div.style.position = 'fixed';
+    div.style.position = 'absolute';
     div.style.top = '0';
     div.style.left = '0';
+    div.style.width = '800px';
+    div.style.height = 'auto';
     div.style.background = 'white';
     div.style.zIndex = '9999';
-    div.style.width = '800px';
+    div.style.opacity = '1'; // Ahora visible
     div.style.padding = '20px';
     div.innerHTML = `
       <div class="remito" style="font-family: Arial, sans-serif;">
@@ -60,7 +61,8 @@ document.getElementById('generateBtn').addEventListener('click', async function(
     `;
     document.body.appendChild(div);
 
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // 🔥 Esperar más tiempo para que se renderice bien
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     await html2pdf().from(div).set({
       filename: `remito_${dataRow['Número Interno:'] || index + 1}.pdf`,
@@ -70,6 +72,7 @@ document.getElementById('generateBtn').addEventListener('click', async function(
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     }).save();
 
+    // Eliminar el div después de generar
     document.body.removeChild(div);
   }
 });
