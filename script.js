@@ -13,12 +13,18 @@ document.getElementById('generateBtn').addEventListener('click', async function(
   const worksheet = workbook.Sheets[sheetName];
   const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
-  json.forEach((row, index) => {
-    if (!row['Cliente:.1']) return; // Saltar filas vacías
+  for (let index = 0; index < json.length; index++) {
+    const row = json[index];
+    if (!row['Cliente:.1']) continue; // Saltear filas vacías
 
-    // Abrimos la nueva pestaña
+    // 🛑 Primero abrir la pestaña
     const nuevaPestana = window.open('', '_blank');
+    if (!nuevaPestana) {
+      alert('Por favor, habilita las ventanas emergentes en tu navegador.');
+      return;
+    }
 
+    // 🛠 Después construir el contenido
     const contenido = `
       <html>
       <head>
@@ -60,8 +66,10 @@ document.getElementById('generateBtn').addEventListener('click', async function(
       </html>
     `;
 
+    // Cargar el contenido en la nueva pestaña
     nuevaPestana.document.open();
     nuevaPestana.document.write(contenido);
     nuevaPestana.document.close();
-  });
+  }
 });
+
