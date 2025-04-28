@@ -20,9 +20,19 @@ document.getElementById('generateBtn').addEventListener('click', async function(
 
   for (let index = 0; index < json.length; index++) {
     const row = json[index];
-    if (!row['Cliente Recptor:']) continue; // Saltar filas vacías
 
-    // Crear un DIV visible para capturar
+    if (!row || Object.keys(row).length === 0) continue; // Saltar filas vacías
+
+    // Normalizar claves
+    const dataRow = {};
+    for (const key in row) {
+      const normalizedKey = key.trim(); // quitar espacios al principio y final
+      dataRow[normalizedKey] = row[key];
+    }
+
+    if (!dataRow['Cliente Recptor:']) continue; // ahora seguro
+
+    // Crear un div visible para capturar
     const div = document.createElement('div');
     div.style.position = 'fixed';
     div.style.top = '0';
@@ -33,36 +43,34 @@ document.getElementById('generateBtn').addEventListener('click', async function(
     div.style.padding = '20px';
     div.innerHTML = `
       <div class="remito" style="font-family: Arial, sans-serif;">
-        <h1>Remito N° ${row['Número Interno: '] || '(sin número)'}</h1>
-        <p><strong>Fecha de Emisión:</strong> ${row['Fecha de Emisión:']}</p>
-        <p><strong>Cliente:</strong> ${row['Cliente Recptor:']}</p>
-        <p><strong>Dirección:</strong> ${row['Dirección receptor: ']}</p>
-        <p><strong>CUIT:</strong> ${row['C.U.I.T. RECPTOR:']}</p>
-        <p><strong>Pedido:</strong> ${row['Pedido:']}</p>
+        <h1>Remito N° ${dataRow['Número Interno:'] || '(sin número)'}</h1>
+        <p><strong>Fecha de Emisión:</strong> ${dataRow['Fecha de Emisión:']}</p>
+        <p><strong>Cliente:</strong> ${dataRow['Cliente Recptor:']}</p>
+        <p><strong>Dirección:</strong> ${dataRow['Dirección receptor:']}</p>
+        <p><strong>CUIT:</strong> ${dataRow['C.U.I.T. RECPTOR:']}</p>
+        <p><strong>Pedido:</strong> ${dataRow['Pedido:']}</p>
         <h3>Productos</h3>
-        <p><strong>Código:</strong> ${row['Código: '] || ''} - ${row['Descripción:'] || ''}</p>
-        <p><strong>Cantidad:</strong> ${row['Cantidad:'] || ''}</p>
-        <p><strong>Peso Estimado Total:</strong> ${row['PESO ESTIMADO TOTAL: '] || ''}</p>
-        <p><strong>Lotes:</strong> ${row['Lotes:'] || ''}</p>
+        <p><strong>Código:</strong> ${dataRow['Código:']} - ${dataRow['Descripción:']}</p>
+        <p><strong>Cantidad:</strong> ${dataRow['Cantidad:']}</p>
+        <p><strong>Peso Estimado Total:</strong> ${dataRow['PESO ESTIMADO TOTAL:']}</p>
+        <p><strong>Lotes:</strong> ${dataRow['Lotes:']}</p>
         <h3>Transporte</h3>
-        <p><strong>Número:</strong> ${row['Nro. Transporte:'] || ''} - <strong>Nombre:</strong> ${row['Transporte:'] || ''}</p>
+        <p><strong>Número:</strong> ${dataRow['Nro. Transporte:']} - <strong>Nombre:</strong> ${dataRow['Transporte:']}</p>
       </div>
     `;
     document.body.appendChild(div);
 
-    // 👇 Esperamos a que el navegador pinte el contenido
-    await new Promise(resolve => setTimeout(resolve, 300)); 
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-    // Ahora sí capturamos y generamos el PDF
     await html2pdf().from(div).set({
-      filename: `remito_${row['Número Interno: '] || index + 1}.pdf`,
+      filename: `remito_${dataRow['Número Interno:'] || index + 1}.pdf`,
       margin: 10,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     }).save();
 
-    // Limpiar el div
     document.body.removeChild(div);
   }
 });
+
