@@ -3,17 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>Generador de Remitos Syngenta</title>
-  <script src="xlsx.full.min.js"></script>
-  <script src="html2pdf.bundle.min.js"></script>
+  
+  <!-- Librería para leer Excel -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+  <!-- Tu script -->
   <script src="script.js" defer></script>
+
+  <!-- Librería para exportar a PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Generador de Remitos Syngenta</h1>
   <input type="file" id="fileInput" accept=".xlsx" />
   <button id="generateBtn">Generar Remitos</button>
-
-  <div id="remitos"></div> <!-- Aquí se generan los remitos -->
-
+  <div id="remitos"></div> <!-- Donde se verán los remitos -->
 </body>
 </html>
