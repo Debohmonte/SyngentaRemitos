@@ -20,7 +20,6 @@ document.getElementById('generateBtn').addEventListener('click', async function(
 
   for (let index = 0; index < json.length; index++) {
     const row = json[index];
-
     if (!row || Object.keys(row).length === 0) continue;
 
     const dataRow = {};
@@ -31,38 +30,37 @@ document.getElementById('generateBtn').addEventListener('click', async function(
 
     if (!dataRow['Cliente Recptor:']) continue;
 
-    // Crear PDF usando jsPDF
-    const pdf = new jspdf.jsPDF();
+    // Crear un nuevo PDF
+    const doc = new jspdf.jsPDF();
 
-    pdf.setFontSize(16);
-    pdf.text(`Remito N° ${dataRow['Número Interno:'] || '(sin número)'}`, 20, 20);
+    doc.setFontSize(16);
+    doc.text(`Remito N° ${dataRow['Número Interno:'] || '(sin número)'}`, 20, 20);
 
-    pdf.setFontSize(12);
-    pdf.text(`Fecha de Emisión: ${dataRow['Fecha de Emisión:'] || ''}`, 20, 40);
-    pdf.text(`Cliente: ${dataRow['Cliente Recptor:'] || ''}`, 20, 50);
-    pdf.text(`Dirección: ${dataRow['Dirección receptor:'] || ''}`, 20, 60);
-    pdf.text(`CUIT: ${dataRow['C.U.I.T. RECPTOR:'] || ''}`, 20, 70);
-    pdf.text(`Pedido: ${dataRow['Pedido:'] || ''}`, 20, 80);
+    doc.setFontSize(12);
+    let y = 30;
+    doc.text(`Fecha de Emisión: ${dataRow['Fecha de Emisión:'] || ''}`, 20, y); y += 10;
+    doc.text(`Cliente: ${dataRow['Cliente Recptor:'] || ''}`, 20, y); y += 10;
+    doc.text(`Dirección: ${dataRow['Dirección receptor:'] || ''}`, 20, y); y += 10;
+    doc.text(`CUIT: ${dataRow['C.U.I.T. RECPTOR:'] || ''}`, 20, y); y += 10;
+    doc.text(`Pedido: ${dataRow['Pedido:'] || ''}`, 20, y); y += 10;
 
-    pdf.setFontSize(14);
-    pdf.text('Productos:', 20, 100);
+    doc.setFontSize(14);
+    doc.text('Productos:', 20, y); y += 10;
+    doc.setFontSize(12);
+    doc.text(`Código: ${dataRow['Código:'] || ''}`, 20, y); y += 10;
+    doc.text(`Descripción: ${dataRow['Descripción:'] || ''}`, 20, y); y += 10;
+    doc.text(`Cantidad: ${dataRow['Cantidad:'] || ''}`, 20, y); y += 10;
+    doc.text(`Peso Estimado Total: ${dataRow['PESO ESTIMADO TOTAL:'] || ''}`, 20, y); y += 10;
+    doc.text(`Lotes: ${dataRow['Lotes:'] || ''}`, 20, y); y += 10;
 
-    pdf.setFontSize(12);
-    pdf.text(`Código: ${dataRow['Código:'] || ''}`, 20, 110);
-    pdf.text(`Descripción: ${dataRow['Descripción:'] || ''}`, 20, 120);
-    pdf.text(`Cantidad: ${dataRow['Cantidad:'] || ''}`, 20, 130);
-    pdf.text(`Peso Estimado Total: ${dataRow['PESO ESTIMADO TOTAL:'] || ''}`, 20, 140);
-    pdf.text(`Lotes: ${dataRow['Lotes:'] || ''}`, 20, 150);
-
-    pdf.setFontSize(14);
-    pdf.text('Transporte:', 20, 170);
-
-    pdf.setFontSize(12);
-    pdf.text(`Nro. Transporte: ${dataRow['Nro. Transporte:'] || ''}`, 20, 180);
-    pdf.text(`Nombre Transporte: ${dataRow['Transporte:'] || ''}`, 20, 190);
+    doc.setFontSize(14);
+    doc.text('Transporte:', 20, y); y += 10;
+    doc.setFontSize(12);
+    doc.text(`Número: ${dataRow['Nro. Transporte:'] || ''}`, 20, y); y += 10;
+    doc.text(`Nombre: ${dataRow['Transporte:'] || ''}`, 20, y); y += 10;
 
     // Guardar el PDF
-    pdf.save(`remito_${dataRow['Número Interno:'] || index + 1}.pdf`);
+    doc.save(`remito_${dataRow['Número Interno:'] || index + 1}.pdf`);
   }
 });
 
