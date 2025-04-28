@@ -7,7 +7,7 @@ document.getElementById('generateBtn').addEventListener('click', async function(
 
   const file = input.files[0];
   const data = await file.arrayBuffer();
-  const workbook = XLSX.read(data);
+  const workbook = XLSX.read(data, { type: 'array' });
 
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
@@ -22,11 +22,12 @@ document.getElementById('generateBtn').addEventListener('click', async function(
     const row = json[index];
     if (!row['Cliente Recptor:']) continue; // Saltar filas vacías
 
-    // Crear un DIV temporal invisible para generar el PDF
+    // Crear un div temporal visible (fuera de pantalla)
     const div = document.createElement('div');
-    div.style.display = 'none';
+    div.style.position = 'absolute';
+    div.style.left = '-9999px';
     div.innerHTML = `
-      <div class="remito">
+      <div class="remito" style="font-family: Arial; padding: 20px;">
         <h1>Remito N° ${row['Número Interno: '] || '(sin número)'}</h1>
         <p><strong>Fecha de Emisión:</strong> ${row['Fecha de Emisión:']}</p>
         <p><strong>Cliente:</strong> ${row['Cliente Recptor:']}</p>
@@ -34,12 +35,12 @@ document.getElementById('generateBtn').addEventListener('click', async function(
         <p><strong>CUIT:</strong> ${row['C.U.I.T. RECPTOR:']}</p>
         <p><strong>Pedido:</strong> ${row['Pedido:']}</p>
         <h3>Productos</h3>
-        <p><strong>Código:</strong> ${row['Código: ']} - ${row['Descripción:']}</p>
-        <p><strong>Cantidad:</strong> ${row['Cantidad:']}</p>
-        <p><strong>Peso Estimado Total:</strong> ${row['PESO ESTIMADO TOTAL: ']}</p>
-        <p><strong>Lotes:</strong> ${row['Lotes:']}</p>
+        <p><strong>Código:</strong> ${row['Código: '] || ''} - ${row['Descripción:'] || ''}</p>
+        <p><strong>Cantidad:</strong> ${row['Cantidad:'] || ''}</p>
+        <p><strong>Peso Estimado Total:</strong> ${row['PESO ESTIMADO TOTAL: '] || ''}</p>
+        <p><strong>Lotes:</strong> ${row['Lotes:'] || ''}</p>
         <h3>Transporte</h3>
-        <p><strong>Número:</strong> ${row['Nro. Transporte:']} - <strong>Nombre:</strong> ${row['Transporte:']}</p>
+        <p><strong>Número:</strong> ${row['Nro. Transporte:'] || ''} - <strong>Nombre:</strong> ${row['Transporte:'] || ''}</p>
       </div>
     `;
     document.body.appendChild(div);
@@ -55,5 +56,4 @@ document.getElementById('generateBtn').addEventListener('click', async function(
     document.body.removeChild(div);
   }
 });
-
 
