@@ -7,7 +7,7 @@ document.getElementById('generateBtn').addEventListener('click', async function(
 
   const file = input.files[0];
   const data = await file.arrayBuffer();
-  const workbook = XLSX.read(data, { type: 'array' });
+  const workbook = XLSX.read(data);
 
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
@@ -22,12 +22,17 @@ document.getElementById('generateBtn').addEventListener('click', async function(
     const row = json[index];
     if (!row['Cliente Recptor:']) continue; // Saltar filas vacías
 
-    // Crear un div temporal visible (fuera de pantalla)
+    // Crear un DIV visible para capturar
     const div = document.createElement('div');
-    div.style.position = 'absolute';
-    div.style.left = '-9999px';
+    div.style.position = 'fixed';
+    div.style.top = '0';
+    div.style.left = '0';
+    div.style.background = 'white';
+    div.style.zIndex = '9999';
+    div.style.width = '800px';
+    div.style.padding = '20px';
     div.innerHTML = `
-      <div class="remito" style="font-family: Arial; padding: 20px;">
+      <div class="remito" style="font-family: Arial, sans-serif;">
         <h1>Remito N° ${row['Número Interno: '] || '(sin número)'}</h1>
         <p><strong>Fecha de Emisión:</strong> ${row['Fecha de Emisión:']}</p>
         <p><strong>Cliente:</strong> ${row['Cliente Recptor:']}</p>
@@ -45,6 +50,10 @@ document.getElementById('generateBtn').addEventListener('click', async function(
     `;
     document.body.appendChild(div);
 
+    // 👇 Esperamos a que el navegador pinte el contenido
+    await new Promise(resolve => setTimeout(resolve, 300)); 
+
+    // Ahora sí capturamos y generamos el PDF
     await html2pdf().from(div).set({
       filename: `remito_${row['Número Interno: '] || index + 1}.pdf`,
       margin: 10,
@@ -53,7 +62,7 @@ document.getElementById('generateBtn').addEventListener('click', async function(
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     }).save();
 
+    // Limpiar el div
     document.body.removeChild(div);
   }
 });
-
