@@ -53,5 +53,15 @@ document.getElementById('generateBtn').addEventListener('click', async function(
         <script>
           function descargarPDF() {
             const remito = document.getElementById('remito');
-            html2pdf().from(remito).save('remito_${row['Número Int_
+            html2pdf().from(remito).save('remito_${row['Número Interno:'] || 'sin_numero'}.pdf');
+          }
+        </script>
+      </body>
+      </html>
+    `;
 
+    nuevaPestana.document.open();
+    nuevaPestana.document.write(contenido);
+    nuevaPestana.document.close();
+  });
+});
