@@ -24,39 +24,52 @@ document.getElementById('generateBtn').addEventListener('click', async function 
         const row = json[index];
         if (!row || Object.keys(row).length === 0) continue;
 
-        if (index !== 0) {
-            doc.addPage();
-        }
+        if (index !== 0) doc.addPage();
 
         const usados = new Set();
 
-        // === Encabezado ===
-        doc.setFontSize(12);
-        doc.text(`R  ${row['Transporte:'] || ''}`, 105, 23, { align: 'center' });
-        
+        // === ENCABEZADO ===
         doc.setFontSize(16);
-        doc.text(`Remito N° ${row['Remito N°: '] || '(sin número)'}`, 105, 15, { align: 'center' });
+        doc.text(`Remito N° ${row['Remito N°:'] || '(sin número)'}`, 105, 15, { align: 'center' });
 
         doc.setFontSize(12);
-        doc.text(`Número Interno: ${row['Número Interno:'] || ''}`, 105, 23, { align: 'center' });
-
-        doc.setFontSize(12);
-        doc.text(`Fecha Emisión: ${row['Fecha de Emisión:'] || ''}`, 105, 23, { align: 'center' });
+        doc.text(`Número Interno: ${row['Número Interno:'] || ''}`, 105, 22, { align: 'center' });
 
         doc.setFontSize(10);
         let y = 30;
 
-        // === Syngenta (orden personalizado) ===
+        // Helper: convertir fechas si vienen como números
+        const convertirFecha = (valor) => {
+            if (!valor) return '';
+            if (!isNaN(valor)) {
+                const epoch = new Date(Date.UTC(1899, 11, 30));
+                const fecha = new Date(epoch.getTime() + Number(valor) * 86400000);
+                return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
+            }
+            return valor;
+        };
+
+        // === Transporte + Fecha de Emisión ===
+        const transporte = row['Transporte:'] || '';
+        const fechaEmision = convertirFecha(row['Fecha de Emisión:']);
+        doc.text(`Transporte: ${transporte}`, 20, y); y += 6;
+        doc.text(`Fecha de Emisión: ${fechaEmision}`, 20, y); y += 6;
+        usados.add('Transporte:');
+        usados.add('Fecha de Emisión:');
+
+        // === Syngenta ===
         const camposFijos = [
             'C.U.I.T.:',
             'Ingresos Brutos (CM):',
             'Inicio de actividades:',
             'I.V.A.:',
             'Fecha de Vencimiento del C.A.I.:',
-            'C.A.I. Nº:',
+            'C.A.I. Nº:'
         ];
         camposFijos.forEach(campo => {
-            doc.text(`${campo} ${row[campo] || ''}`, 20, y);
+            let valor = row[campo] || '';
+            if (campo.toLowerCase().includes('fecha')) valor = convertirFecha(valor);
+            doc.text(`${campo} ${valor}`, 20, y);
             usados.add(campo);
             y += 6;
         });
@@ -68,7 +81,6 @@ document.getElementById('generateBtn').addEventListener('click', async function 
             'Dirección receptor:',
             'Teléfono Recptor:',
             'Pedido:',
-            'Transporte:',
             'Nro. Transporte:'
         ];
         camposEmisor.forEach(campo => {
@@ -109,14 +121,17 @@ document.getElementById('generateBtn').addEventListener('click', async function 
             y += 6;
         });
 
-        // === Otros campos (dinámicos) ===
+        // === Otros campos ===
         doc.setFontSize(10);
         doc.text('Otros campos:', 20, y); y += 6;
 
         for (const key in row) {
             if (usados.has(key)) continue;
-            const value = String(row[key]).trim();
-            doc.text(`${key}: ${value}`, 20, y);
+
+            let valor = String(row[key]).trim();
+            if (key.toLowerCase().includes('fecha')) valor = convertirFecha(valor);
+
+            doc.text(`${key}: ${valor}`, 20, y);
             y += 6;
 
             if (y > 270) {
