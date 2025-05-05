@@ -1,3 +1,4 @@
+
     document.getElementById('generateBtn').addEventListener('click', async function () {
       const input = document.getElementById('fileInput');
       if (!input.files.length) {
@@ -34,6 +35,10 @@
         return valor;
       };
 
+      // 🔢 Número base para remitos autoincrementales
+      let ultimoRemito = 24291;
+      const prefijoRemito = '0283-';
+
       const doc = new jsPDF();
 
       json.forEach((originalRow, index) => {
@@ -44,9 +49,9 @@
         const row = {};
         for (const [key, value] of Object.entries(originalRow)) {
           const cleanKey = key
-            .replace(/[:]+$/g, '')         // elimina ":" al final
-            .replace(/\s{2,}/g, ' ')       // reemplaza espacios múltiples
-            .replace(/[:]/g, '')           // elimina ":" intermedios
+            .replace(/[:]+$/g, '')
+            .replace(/\s{2,}/g, ' ')
+            .replace(/[:]/g, '')
             .trim();
           row[cleanKey] = value != null ? value.toString() : '';
         }
@@ -54,8 +59,11 @@
         const usados = new Set();
 
         // === ENCABEZADO ===
+        const numeroRemito = ultimoRemito + index;
+        const remitoFormateado = `${prefijoRemito}${String(numeroRemito).padStart(8, '0')}`;
+
         doc.setFontSize(16);
-        doc.text(`Remito N° ${row['Remito N°'] || '(sin número)'}`, 105, 15, { align: 'center' });
+        doc.text(`Remito N° ${remitoFormateado}`, 105, 15, { align: 'center' });
 
         doc.setFontSize(12);
         doc.text(`Número Interno: ${row['Número Interno'] || ''}`, 105, 22, { align: 'center' });
@@ -63,14 +71,20 @@
         const fechaEmision = convertirFecha(row['Fecha de Emisión']);
         doc.text(`Fecha de Emisión: ${fechaEmision}`, 105, 29, { align: 'center' });
 
-        usados.add('Remito N°');
         usados.add('Número Interno');
         usados.add('Fecha de Emisión');
 
         doc.setFontSize(10);
         let y = 40;
 
-        // === SYNGENTA ===
+        // === SYNGENTA (con valores fijos) ===
+        const valoresFijos = {
+          'C.U.I.T.': '30-64632845-0',
+          'Ingresos Brutos (CM)': '901-962580-1',
+          'Inicio de actividades': '31/12/1991',
+          'I.V.A.': 'Responsable Inscripto'
+        };
+
         const camposSyngenta = [
           'Nro. Transporte',
           'Transporte',
@@ -82,7 +96,7 @@
           'C.A.I. Nº'
         ];
         camposSyngenta.forEach(campo => {
-          let valor = row[campo] || '';
+          let valor = valoresFijos[campo] || row[campo] || '';
           if (
             campo.toLowerCase().includes('fecha') ||
             campo.toLowerCase().includes('inicio de actividades')
@@ -174,4 +188,5 @@
 
       doc.save('Remitos_Syngenta.pdf');
     });
+
 
