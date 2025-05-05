@@ -1,3 +1,4 @@
+
 document.getElementById('generateBtn').addEventListener('click', async function () {
   const input = document.getElementById('fileInput');
   if (!input.files.length) {
@@ -46,52 +47,50 @@ document.getElementById('generateBtn').addEventListener('click', async function 
     }
 
     const usados = new Set();
-    let y = 20;
-
-    const remitoNro = prefijo + String(remitoBase + index).padStart(8, '0');
+    let y = 10;
 
     // === ENCABEZADO ===
-    doc.setFillColor(77, 77, 77);
-    doc.rect(10, y, 190, 20, 'F');
-    doc.setTextColor(255);
+    doc.setFillColor(180, 180, 180); // gris oscuro
+    doc.rect(10, y, 190, 25, 'F');
     doc.setFontSize(16);
+    const remitoNro = prefijo + String(remitoBase + index).padStart(8, '0');
     doc.text(`Remito N° ${remitoNro}`, 105, y + 8, { align: 'center' });
 
     doc.setFontSize(12);
-    doc.text(`Número Interno: ${row['Número Interno'] || ''}`, 105, y + 14, { align: 'center' });
+    doc.text(`Número Interno: ${row['Número Interno'] || ''}`, 105, y + 15, { align: 'center' });
+    doc.text(`Fecha de Emisión: ${convertirFecha(row['Fecha de Emisión'])}`, 105, y + 22, { align: 'center' });
+    usados.add('Número Interno'); usados.add('Fecha de Emisión');
 
-    const fechaEmision = convertirFecha(row['Fecha de Emisión']);
-    doc.text(`Fecha de Emisión: ${fechaEmision}`, 105, y + 20, { align: 'center' });
-
-    usados.add('Número Interno');
-    usados.add('Fecha de Emisión');
-    y += 25;
-    doc.setTextColor(0);
+    y += 30;
 
     // === SYNGENTA ===
-    doc.setFillColor(191, 191, 191);
-    doc.rect(10, y, 190, 30, 'F');
+    doc.setFillColor(220, 220, 220); // gris medio
+    doc.rect(10, y, 190, 52, 'F');
     const valoresFijos = {
       'C.U.I.T.': '30-64632845-0',
       'Ingresos Brutos (CM)': '901-962580-1',
       'Inicio de actividades': '31/12/1991',
       'I.V.A.': 'Responsable Inscripto'
     };
-    const camposSyngenta = ['Nro. Transporte', 'Transporte', 'C.U.I.T.', 'Ingresos Brutos (CM)', 'Inicio de actividades', 'I.V.A.', 'Fecha de Vencimiento del C.A.I.', 'C.A.I. Nº'];
+    const camposSyngenta = [
+      'Nro. Transporte', 'Transporte', 'C.U.I.T.', 'Ingresos Brutos (CM)',
+      'Inicio de actividades', 'I.V.A.', 'Fecha de Vencimiento del C.A.I.', 'C.A.I. Nº'
+    ];
+    doc.setFontSize(10);
     camposSyngenta.forEach(campo => {
       let valor = valoresFijos[campo] || row[campo] || '';
       if (campo.toLowerCase().includes('fecha') || campo.toLowerCase().includes('inicio')) {
         valor = convertirFecha(valor);
       }
-      doc.setFontSize(10);
       doc.text(`${campo}: ${valor}`, 20, y + 6);
       usados.add(campo);
       y += 6;
     });
 
     // === EMISOR ===
-    doc.setFillColor(217, 217, 217);
-    doc.rect(10, y, 190, 20, 'F');
+    y += 4;
+    doc.setFillColor(240, 240, 240); // gris claro
+    doc.rect(10, y, 190, 32, 'F');
     const camposEmisor = ['Cliente', 'Deposito Origen', 'Dirección receptor', 'Teléfono Recptor', 'Pedido'];
     camposEmisor.forEach(campo => {
       if (row[campo]) {
@@ -102,9 +101,10 @@ document.getElementById('generateBtn').addEventListener('click', async function 
     });
 
     // === RECEPTOR ===
-    doc.setFillColor(230, 230, 230);
-    doc.rect(10, y, 190, 20, 'F');
-    const camposReceptor = ['Cliente Receptor', 'Deposito Destino', 'Dirección receptor', 'Código de Cliente', 'C.U.I.T. Receptor'];
+    y += 4;
+    doc.setFillColor(245, 245, 245); // más claro aún
+    doc.rect(10, y, 190, 36, 'F');
+    const camposReceptor = ['Cliente Receptor', 'Deposito Destino', 'Dirección receptor', 'Código de Cliente', 'Pedido'];
     camposReceptor.forEach(campo => {
       if (row[campo]) {
         doc.text(`${campo}: ${row[campo]}`, 20, y + 6);
@@ -114,10 +114,9 @@ document.getElementById('generateBtn').addEventListener('click', async function 
     });
 
     // === PRODUCTOS ===
+    y += 4;
     doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text('Productos:', 20, y + 6);
-    y += 8;
+    doc.text('Productos:', 20, y); y += 8;
     doc.setFontSize(10);
     const camposProducto = ['Código', 'Descripción', 'Cantidad', 'Lotes', 'Peso estimado Total'];
     camposProducto.forEach(campo => {
@@ -129,6 +128,7 @@ document.getElementById('generateBtn').addEventListener('click', async function 
     });
 
     // === OTROS CAMPOS ===
+    y += 6;
     doc.setFontSize(10);
     doc.text('Otros campos:', 20, y); y += 6;
     for (const key in row) {
@@ -145,9 +145,11 @@ document.getElementById('generateBtn').addEventListener('click', async function 
       }
     }
 
+    // === FIRMA Y PIE ===
     y += 6;
     doc.setFontSize(12);
     doc.text('Recibí Conforme: ___________________________', 20, y); y += 10;
+
     doc.setFontSize(8);
     doc.text('La mercadería será transportada bajo exclusiva responsabilidad del transportista.', 20, 280);
     doc.text('Seguro de mercadería por cuenta de Syngenta.', 20, 285);
@@ -155,4 +157,3 @@ document.getElementById('generateBtn').addEventListener('click', async function 
 
   doc.save('Remitos_Syngenta.pdf');
 });
-
