@@ -31,25 +31,29 @@ document.getElementById('generateBtn').addEventListener('click', async function 
         const usados = new Set();
 
         // === Encabezado ===
+        doc.setFontSize(12);
+        doc.text(`R  ${row['Transporte:'] || ''}`, 105, 23, { align: 'center' });
+        
         doc.setFontSize(16);
-        doc.text(`Remito N° ${row['Remito N°:'] || '(sin número)'}`, 105, 15, { align: 'center' });
+        doc.text(`Remito N° ${row['Remito N°: '] || '(sin número)'}`, 105, 15, { align: 'center' });
 
         doc.setFontSize(12);
         doc.text(`Número Interno: ${row['Número Interno:'] || ''}`, 105, 23, { align: 'center' });
+
+        doc.setFontSize(12);
+        doc.text(`Fecha Emisión: ${row['Fecha de Emisión:'] || ''}`, 105, 23, { align: 'center' });
 
         doc.setFontSize(10);
         let y = 30;
 
         // === Syngenta (orden personalizado) ===
         const camposFijos = [
-            'Nro. Transporte:',
             'C.U.I.T.:',
             'Ingresos Brutos (CM):',
             'Inicio de actividades:',
             'I.V.A.:',
             'Fecha de Vencimiento del C.A.I.:',
             'C.A.I. Nº:',
-            'Fecha de Emisión:'
         ];
         camposFijos.forEach(campo => {
             doc.text(`${campo} ${row[campo] || ''}`, 20, y);
