@@ -35,6 +35,8 @@ json.forEach((originalRow, index) => {
 
   // === SYNGENTA ===
   const camposSyngenta = [
+    'Nro. Transporte',
+    'Transporte',
     'C.U.I.T.',
     'Ingresos Brutos (CM)',
     'Inicio de actividades',
@@ -52,13 +54,11 @@ json.forEach((originalRow, index) => {
 
   // === EMISOR ===
   const camposEmisor = [
-    'Cliente Recptor',
+    'Cliente',
     'Deposito Origen',
     'Dirección receptor',
     'Teléfono Recptor',
     'Pedido',
-    'Transporte',
-    'Nro. Transporte'
   ];
   camposEmisor.forEach(campo => {
     doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
@@ -90,7 +90,7 @@ json.forEach((originalRow, index) => {
     'Descripción',
     'Cantidad',
     'Lotes',
-    'PESO ESTIMADO TOTAL'
+    'Peso estimado Total:'
   ];
   camposProducto.forEach(campo => {
     doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
