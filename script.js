@@ -28,17 +28,19 @@ document.getElementById('generateBtn').addEventListener('click', async function 
             doc.addPage();
         }
 
-        // Evitar duplicar campos
         const usados = new Set();
 
-        // Encabezado
+        // === Encabezado ===
         doc.setFontSize(16);
-        doc.text(`Remito N° ${row['Número Interno:'] || '(sin número)'}`, 105, 15, { align: 'center' });
+        doc.text(`Remito N° ${row['Remito N°:'] || '(sin número)'}`, 105, 15, { align: 'center' });
+
+        doc.setFontSize(12);
+        doc.text(`Número Interno: ${row['Número Interno:'] || ''}`, 105, 23, { align: 'center' });
 
         doc.setFontSize(10);
-        let y = 25;
+        let y = 30;
 
-        // --- Syngenta (orden personalizado)
+        // === Syngenta (orden personalizado) ===
         const camposFijos = [
             'Nro. Transporte:',
             'C.U.I.T.:',
@@ -49,14 +51,13 @@ document.getElementById('generateBtn').addEventListener('click', async function 
             'C.A.I. Nº:',
             'Fecha de Emisión:'
         ];
-
         camposFijos.forEach(campo => {
             doc.text(`${campo} ${row[campo] || ''}`, 20, y);
             usados.add(campo);
             y += 6;
         });
 
-        // --- Emisor
+        // === Emisor ===
         const camposEmisor = [
             'Cliente Recptor:',
             'Deposito Origen',
@@ -72,7 +73,7 @@ document.getElementById('generateBtn').addEventListener('click', async function 
             y += 6;
         });
 
-        // --- Receptor
+        // === Receptor ===
         const camposReceptor = [
             'Deposito Destino',
             'Código de Cliente:',
@@ -87,7 +88,7 @@ document.getElementById('generateBtn').addEventListener('click', async function 
             y += 6;
         });
 
-        // --- Productos
+        // === Productos ===
         doc.setFontSize(12);
         doc.text('Productos:', 20, y); y += 8;
         doc.setFontSize(10);
@@ -104,7 +105,7 @@ document.getElementById('generateBtn').addEventListener('click', async function 
             y += 6;
         });
 
-        // --- Otros campos (dinámicos)
+        // === Otros campos (dinámicos) ===
         doc.setFontSize(10);
         doc.text('Otros campos:', 20, y); y += 6;
 
@@ -120,12 +121,12 @@ document.getElementById('generateBtn').addEventListener('click', async function 
             }
         }
 
-        // Firma
+        // === Firma ===
         y += 6;
         doc.setFontSize(12);
         doc.text('Recibí Conforme: ___________________________', 20, y); y += 10;
 
-        // Pie de página
+        // === Pie de página ===
         doc.setFontSize(8);
         doc.text('La mercadería será transportada bajo exclusiva responsabilidad del transportista.', 20, 280);
         doc.text('Seguro de mercadería por cuenta de Syngenta.', 20, 285);
@@ -133,4 +134,5 @@ document.getElementById('generateBtn').addEventListener('click', async function 
 
     doc.save('Remitos_Syngenta.pdf');
 });
+
 
