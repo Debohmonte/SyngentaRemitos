@@ -1,165 +1,168 @@
+document.getElementById('generateBtn').addEventListener('click', async function () {
+  const input = document.getElementById('fileInput');
+  if (!input.files.length) {
+    alert('Por favor, sube un archivo Excel.');
+    return;
+  }
 
-    document.getElementById('generateBtn').addEventListener('click', async function () {
-      const input = document.getElementById('fileInput');
-      if (!input.files.length) {
-        alert('Por favor, sube un archivo Excel.');
-        return;
-      }
+  const { jsPDF } = window.jspdf;
+  const file = input.files[0];
+  const data = await file.arrayBuffer();
+  const workbook = XLSX.read(data);
+  const sheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName];
+  const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
-      const { jsPDF } = window.jspdf;
-      const file = input.files[0];
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data);
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+  if (json.length === 0) {
+    alert('No se encontraron datos en la hoja.');
+    return;
+  }
 
-      if (json.length === 0) {
-        alert('No se encontraron datos en la hoja.');
-        return;
-      }
+  const convertirFecha = (valor) => {
+    if (!valor) return '';
+    const numero = Number(valor);
+    if (!isNaN(numero)) {
+      const epoch = new Date(Date.UTC(1899, 11, 30));
+      const fecha = new Date(epoch.getTime() + numero * 86400000);
+      return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
+    }
+    if (typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+      const [y, m, d] = valor.split('-');
+      return `${d}/${m}/${y}`;
+    }
+    return valor;
+  };
 
-      const convertirFecha = (valor) => {
-        if (!valor) return '';
-        const numero = Number(valor);
-        if (!isNaN(numero)) {
-          const epoch = new Date(Date.UTC(1899, 11, 30));
-          const fecha = new Date(epoch.getTime() + numero * 86400000);
-          return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
-        }
-        if (typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(valor)) {
-          const [y, m, d] = valor.split('-');
-          return `${d}/${m}/${y}`;
-        }
-        return valor;
-      };
+  const doc = new jsPDF();
 
-      const doc = new jsPDF();
+  json.forEach((originalRow, index) => {
+    if (!originalRow || Object.keys(originalRow).length === 0) return;
+    if (index !== 0) doc.addPage();
 
-      json.forEach((originalRow, index) => {
-        if (!originalRow || Object.keys(originalRow).length === 0) return;
-        if (index !== 0) doc.addPage();
+    // 🔧 Normalizar claves y guardar los valores limpios
+    const row = {};
+    for (const [key, value] of Object.entries(originalRow)) {
+      const cleanKey = key
+        .replace(/[:\s]+$/g, '') // remove trailing colons and spaces
+        .replace(/[:\s]+/g, ' ') // normalize multiple spaces/colons inside
+        .trim();
+      row[cleanKey] = value;
+    }
 
-        // Limpiar claves
-        const row = {};
-        Object.entries(originalRow).forEach(([key, value]) => {
-          const cleanKey = key.replace(/[:\s]+$/g, '').trim(); // quitar espacios y ":" finales
-          row[cleanKey] = value;
-        });
+    const usados = new Set();
 
-        const usados = new Set();
+    // === ENCABEZADO ===
+    doc.setFontSize(16);
+    doc.text(`Remito N° ${row['Remito N°'] || '(sin número)'}`, 105, 15, { align: 'center' });
 
-        // ENCABEZADO
-        doc.setFontSize(16);
-        doc.text(`Remito N° ${row['Remito N°'] || '(sin número)'}`, 105, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`Número Interno: ${row['Número Interno'] || ''}`, 105, 22, { align: 'center' });
 
-        doc.setFontSize(12);
-        doc.text(`Número Interno: ${row['Número Interno'] || ''}`, 105, 22, { align: 'center' });
+    const fechaEmision = convertirFecha(row['Fecha de Emisión']);
+    doc.text(`Fecha de Emisión: ${fechaEmision}`, 105, 29, { align: 'center' });
 
-        const fechaEmision = convertirFecha(row['Fecha de Emisión']);
-        doc.text(`Fecha de Emisión: ${fechaEmision}`, 105, 29, { align: 'center' });
+    usados.add('Remito N°');
+    usados.add('Número Interno');
+    usados.add('Fecha de Emisión');
 
-        usados.add('Remito N°');
-        usados.add('Número Interno');
-        usados.add('Fecha de Emisión');
+    doc.setFontSize(10);
+    let y = 40;
 
-        doc.setFontSize(10);
-        let y = 40;
-
-        // Syngenta
-        const camposFijos = [
-          'C.U.I.T.',
-          'Ingresos Brutos (CM)',
-          'Inicio de actividades',
-          'I.V.A.',
-          'Fecha de Vencimiento del C.A.I.',
-          'C.A.I. Nº'
-        ];
-        camposFijos.forEach(campo => {
-          let valor = row[campo] || '';
-          if (campo.toLowerCase().includes('fecha')) valor = convertirFecha(valor);
-          doc.text(`${campo}: ${valor}`, 20, y);
-          usados.add(campo);
-          y += 6;
-        });
-
-        // Emisor
-        const camposEmisor = [
-          'Cliente Recptor',
-          'Deposito Origen',
-          'Dirección receptor',
-          'Teléfono Recptor',
-          'Pedido',
-          'Transporte',
-          'Nro. Transporte'
-        ];
-        camposEmisor.forEach(campo => {
-          doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
-          usados.add(campo);
-          y += 6;
-        });
-
-        // Receptor
-        const camposReceptor = [
-          'Deposito Destino',
-          'Código de Cliente',
-          'Cliente Receptor',
-          'Dirección receptor',
-          'C.U.I.T. Receptor',
-          'Pedido'
-        ];
-        camposReceptor.forEach(campo => {
-          doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
-          usados.add(campo);
-          y += 6;
-        });
-
-        // Productos
-        doc.setFontSize(12);
-        doc.text('Productos:', 20, y); y += 8;
-        doc.setFontSize(10);
-        const camposProducto = [
-          'Código',
-          'Descripción',
-          'Cantidad',
-          'Lotes',
-          'PESO ESTIMADO TOTAL'
-        ];
-        camposProducto.forEach(campo => {
-          doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
-          usados.add(campo);
-          y += 6;
-        });
-
-        // Otros campos dinámicos
-        doc.setFontSize(10);
-        doc.text('Otros campos:', 20, y); y += 6;
-
-        for (const key in row) {
-          if (usados.has(key)) continue;
-
-          let valor = row[key];
-          if (key.toLowerCase().includes('fecha')) valor = convertirFecha(valor);
-
-          doc.text(`${key}: ${valor}`, 20, y);
-          y += 6;
-
-          if (y > 270) {
-            doc.addPage();
-            y = 20;
-          }
-        }
-
-        // Firma
-        y += 6;
-        doc.setFontSize(12);
-        doc.text('Recibí Conforme: ___________________________', 20, y); y += 10;
-
-        // Pie de página
-        doc.setFontSize(8);
-        doc.text('La mercadería será transportada bajo exclusiva responsabilidad del transportista.', 20, 280);
-        doc.text('Seguro de mercadería por cuenta de Syngenta.', 20, 285);
-      });
-
-      doc.save('Remitos_Syngenta.pdf');
+    // SYNGENTA
+    const camposSyngenta = [
+      'C.U.I.T.',
+      'Ingresos Brutos (CM)',
+      'Inicio de actividades',
+      'I.V.A.',
+      'Fecha de Vencimiento del C.A.I.',
+      'C.A.I. Nº'
+    ];
+    camposSyngenta.forEach(campo => {
+      let valor = row[campo] || '';
+      if (campo.toLowerCase().includes('fecha')) valor = convertirFecha(valor);
+      doc.text(`${campo}: ${valor}`, 20, y);
+      usados.add(campo);
+      y += 6;
     });
+
+    // EMISOR
+    const camposEmisor = [
+      'Cliente Recptor',
+      'Deposito Origen',
+      'Dirección receptor',
+      'Teléfono Recptor',
+      'Pedido',
+      'Transporte',
+      'Nro. Transporte'
+    ];
+    camposEmisor.forEach(campo => {
+      doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
+      usados.add(campo);
+      y += 6;
+    });
+
+    // RECEPTOR
+    const camposReceptor = [
+      'Deposito Destino',
+      'Código de Cliente',
+      'Cliente Receptor',
+      'Dirección receptor',
+      'C.U.I.T. Receptor',
+      'Pedido'
+    ];
+    camposReceptor.forEach(campo => {
+      doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
+      usados.add(campo);
+      y += 6;
+    });
+
+    // PRODUCTOS
+    doc.setFontSize(12);
+    doc.text('Productos:', 20, y); y += 8;
+    doc.setFontSize(10);
+    const camposProducto = [
+      'Código',
+      'Descripción',
+      'Cantidad',
+      'Lotes',
+      'PESO ESTIMADO TOTAL'
+    ];
+    camposProducto.forEach(campo => {
+      doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
+      usados.add(campo);
+      y += 6;
+    });
+
+    // OTROS CAMPOS
+    doc.setFontSize(10);
+    doc.text('Otros campos:', 20, y); y += 6;
+
+    for (const key in row) {
+      if (usados.has(key)) continue;
+
+      let valor = row[key];
+      if (key.toLowerCase().includes('fecha')) valor = convertirFecha(valor);
+
+      doc.text(`${key}: ${valor}`, 20, y);
+      y += 6;
+
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+    }
+
+    // FIRMA
+    y += 6;
+    doc.setFontSize(12);
+    doc.text('Recibí Conforme: ___________________________', 20, y); y += 10;
+
+    // PIE DE PÁGINA
+    doc.setFontSize(8);
+    doc.text('La mercadería será transportada bajo exclusiva responsabilidad del transportista.', 20, 280);
+    doc.text('Seguro de mercadería por cuenta de Syngenta.', 20, 285);
+  });
+
+  doc.save('Remitos_Syngenta.pdf');
+});
+
