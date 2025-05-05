@@ -76,6 +76,9 @@
         let y = 40;
 
         // === VALORES FIJOS SYNGENTA ===
+        doc.setFontSize(12);
+        doc.text('Syngenta:', 20, y); y += 8;
+        doc.setFontSize(10);
         const valoresFijos = {
           'C.U.I.T.': '30-64632845-0',
           'Ingresos Brutos (CM)': '901-962580-1',
@@ -83,6 +86,9 @@
           'I.V.A.': 'Responsable Inscripto'
         };
 
+        doc.setFontSize(12);
+        doc.text('Emisor:', 20, y); y += 8;
+        doc.setFontSize(10);
         const camposSyngenta = [
           'Nro. Transporte',
           'Transporte',
@@ -119,6 +125,9 @@
         });
 
         // === RECEPTOR ===
+        doc.setFontSize(12);
+        doc.text('Receptor:', 20, y); y += 8;
+        doc.setFontSize(10);
         const camposReceptor = [
           'Deposito Destino',
           'Código de Cliente',
