@@ -52,6 +52,8 @@
 
         // === ENCABEZADO ===
         const remitoNro = prefijo + String(remitoBase + index).padStart(8, '0');
+        doc.setFillColor(224, 224, 224);
+        doc.rect(10, y, 190, 20, 'F');
         doc.setFontSize(16);
         doc.text(`Remito N° ${remitoNro}`, 105, 15, { align: 'center' });
 
