@@ -5,7 +5,7 @@ document.getElementById('generateBtn').addEventListener('click', async function(
         return;
     }
 
-    const { jsPDF } = window.jspdf; // ✅ Importar correctamente jsPDF
+    const { jsPDF } = window.jspdf;
     const file = input.files[0];
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data);
@@ -19,66 +19,47 @@ document.getElementById('generateBtn').addEventListener('click', async function(
         return;
     }
 
-    // Crear 1 solo documento para todos los remitos
     const doc = new jsPDF();
 
     for (let index = 0; index < json.length; index++) {
         const row = json[index];
         if (!row || Object.keys(row).length === 0) continue;
 
-        const dataRow = {};
-        for (const key in row) {
-            const normalizedKey = key.trim();
-            dataRow[normalizedKey] = row[key];
-        }
-
-        if (!dataRow['Cliente Recptor:']) continue;
-
         if (index !== 0) {
-            doc.addPage(); // 👉 Cada remito empieza en nueva página
+            doc.addPage(); // 👉 Nueva página para cada remito
         }
 
-        // Títulos
         doc.setFontSize(16);
-        doc.text(`Remito N° ${dataRow['Número Interno:'] || '(sin número)'}`, 105, 15, { align: 'center' });
+        const nro = row['Número Interno:'] || `(sin número)`;
+        doc.text(`Remito N° ${nro}`, 105, 15, { align: 'center' });
 
         doc.setFontSize(10);
-
         let y = 25;
 
-        // Datos generales
-        doc.text(`Fecha de Emisión: ${dataRow['Fecha de Emisión:'] || ''}`, 20, y); y += 6;
-        doc.text(`Cliente: ${dataRow['Cliente Recptor:'] || ''}`, 20, y); y += 6;
-        doc.text(`Dirección: ${dataRow['Dirección receptor:'] || ''}`, 20, y); y += 6;
-        doc.text(`CUIT: ${dataRow['C.U.I.T. RECPTOR:'] || ''}`, 20, y); y += 6;
-        doc.text(`Pedido: ${dataRow['Pedido:'] || ''}`, 20, y); y += 6;
+        // 🔁 Mostrar TODAS las columnas (de la A a la Z, cualquier nombre)
+        for (const key in row) {
+            const cleanKey = key.trim();
+            const value = String(row[key]).trim();
+            doc.text(`${cleanKey}: ${value}`, 20, y);
+            y += 6;
 
-        // Transporte
-        doc.text(`Transporte: ${dataRow['Transporte:'] || ''}`, 20, y); y += 6;
-        doc.text(`Número Transporte: ${dataRow['Nro. Transporte:'] || ''}`, 20, y); y += 10;
-
-        // Productos
-        doc.setFontSize(12);
-        doc.text('Productos:', 20, y); y += 8;
-        doc.setFontSize(10);
-
-        doc.text(`Código: ${dataRow['Código:'] || ''}`, 20, y); y += 5;
-        doc.text(`Descripción: ${dataRow['Descripción:'] || ''}`, 20, y); y += 5;
-        doc.text(`Cantidad: ${dataRow['Cantidad:'] || ''}`, 20, y); y += 5;
-        doc.text(`Peso Estimado Total: ${dataRow['PESO ESTIMADO TOTAL:'] || ''}`, 20, y); y += 5;
-        doc.text(`Lotes: ${dataRow['Lotes:'] || ''}`, 20, y); y += 10;
+            // ⚠️ Si se acerca al final de la hoja, agregar página nueva
+            if (y > 270) {
+                doc.addPage();
+                y = 20;
+            }
+        }
 
         // Firma
+        y += 6;
         doc.setFontSize(12);
-        doc.text('Recibí Conforme: ___________________________', 20, y); y += 10;
+        doc.text('Recibí Conforme: ___________________________', 20, y);
 
         // Pie
         doc.setFontSize(8);
         doc.text('La mercadería será transportada bajo exclusiva responsabilidad del transportista.', 20, 280);
-        doc.text('Jurisdicción Rosario - Santa Fe. No válido como factura.', 20, 285);
+        doc.text('Seguro de mercaderia por cuenta de Syngenta', 20, 285);
     }
 
-    // ✅ Descargar 1 solo PDF final con todos los remitos
-    doc.save('Remitos_Syngenta.pdf');
+    doc.save('Remitos_Completos.pdf');
 });
-
