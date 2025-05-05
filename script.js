@@ -1,4 +1,5 @@
-document.getElementById('generateBtn').addEventListener('click', async function () {
+
+    document.getElementById('generateBtn').addEventListener('click', async function () {
       const input = document.getElementById('fileInput');
       if (!input.files.length) {
         alert('Por favor, sube un archivo Excel.');
@@ -18,7 +19,6 @@ document.getElementById('generateBtn').addEventListener('click', async function 
         return;
       }
 
-      // 🔁 Función para convertir fechas
       const convertirFecha = (valor) => {
         if (!valor) return '';
         const numero = Number(valor);
@@ -36,94 +36,102 @@ document.getElementById('generateBtn').addEventListener('click', async function 
 
       const doc = new jsPDF();
 
-      json.forEach((row, index) => {
-        if (!row || Object.keys(row).length === 0) return;
+      json.forEach((originalRow, index) => {
+        if (!originalRow || Object.keys(originalRow).length === 0) return;
         if (index !== 0) doc.addPage();
+
+        // Limpiar claves
+        const row = {};
+        Object.entries(originalRow).forEach(([key, value]) => {
+          const cleanKey = key.replace(/[:\s]+$/g, '').trim(); // quitar espacios y ":" finales
+          row[cleanKey] = value;
+        });
 
         const usados = new Set();
 
-        // === ENCABEZADO ===
+        // ENCABEZADO
         doc.setFontSize(16);
-        doc.text(`Remito N° ${row['Remito N°: '] || '(sin número)'}`, 105, 15, { align: 'center' });
+        doc.text(`Remito N° ${row['Remito N°'] || '(sin número)'}`, 105, 15, { align: 'center' });
 
         doc.setFontSize(12);
-        doc.text(`Número Interno: ${row['Número Interno: '] || ''}`, 105, 22, { align: 'center' });
+        doc.text(`Número Interno: ${row['Número Interno'] || ''}`, 105, 22, { align: 'center' });
 
-        const fechaEmision = convertirFecha(row['Fecha de Emisión:']);
+        const fechaEmision = convertirFecha(row['Fecha de Emisión']);
         doc.text(`Fecha de Emisión: ${fechaEmision}`, 105, 29, { align: 'center' });
-        usados.add('Remito N°:');
-        usados.add('Número Interno:');
-        usados.add('Fecha de Emisión:');
+
+        usados.add('Remito N°');
+        usados.add('Número Interno');
+        usados.add('Fecha de Emisión');
 
         doc.setFontSize(10);
         let y = 40;
 
-        // === Syngenta ===
+        // Syngenta
         const camposFijos = [
-          'C.U.I.T.:',
-          'Ingresos Brutos (CM):',
-          'Inicio de actividades:',
-          'I.V.A.:',
-          'Fecha de Vencimiento del C.A.I.:',
-          'C.A.I. Nº:'
+          'C.U.I.T.',
+          'Ingresos Brutos (CM)',
+          'Inicio de actividades',
+          'I.V.A.',
+          'Fecha de Vencimiento del C.A.I.',
+          'C.A.I. Nº'
         ];
         camposFijos.forEach(campo => {
           let valor = row[campo] || '';
           if (campo.toLowerCase().includes('fecha')) valor = convertirFecha(valor);
-          doc.text(`${campo} ${valor}`, 20, y);
+          doc.text(`${campo}: ${valor}`, 20, y);
           usados.add(campo);
           y += 6;
         });
 
-        // === Emisor ===
+        // Emisor
         const camposEmisor = [
-          'Cliente Recptor:',
+          'Cliente Recptor',
           'Deposito Origen',
-          'Dirección receptor:',
-          'Teléfono Recptor:',
-          'Pedido:',
-          'Transporte:',
-          'Nro. Transporte:'
+          'Dirección receptor',
+          'Teléfono Recptor',
+          'Pedido',
+          'Transporte',
+          'Nro. Transporte'
         ];
         camposEmisor.forEach(campo => {
-          doc.text(`${campo} ${row[campo] || ''}`, 20, y);
+          doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
           usados.add(campo);
           y += 6;
         });
 
-        // === Receptor ===
+        // Receptor
         const camposReceptor = [
           'Deposito Destino',
-          'Código de Cliente:',
-          'Cliente Receptor:',
-          'Dirección receptor:',
-          'C.U.I.T. Receptor:',
-          'Pedido:'
+          'Código de Cliente',
+          'Cliente Receptor',
+          'Dirección receptor',
+          'C.U.I.T. Receptor',
+          'Pedido'
         ];
         camposReceptor.forEach(campo => {
-          doc.text(`${campo} ${row[campo] || ''}`, 20, y);
+          doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
           usados.add(campo);
           y += 6;
         });
 
-        // === Productos ===
+        // Productos
         doc.setFontSize(12);
         doc.text('Productos:', 20, y); y += 8;
         doc.setFontSize(10);
         const camposProducto = [
-          'Código:',
-          'Descripción:',
-          'Cantidad:',
-          'Lotes:',
-          'PESO ESTIMADO TOTAL:'
+          'Código',
+          'Descripción',
+          'Cantidad',
+          'Lotes',
+          'PESO ESTIMADO TOTAL'
         ];
         camposProducto.forEach(campo => {
-          doc.text(`${campo} ${row[campo] || ''}`, 20, y);
+          doc.text(`${campo}: ${row[campo] || ''}`, 20, y);
           usados.add(campo);
           y += 6;
         });
 
-        // === Otros campos dinámicos ===
+        // Otros campos dinámicos
         doc.setFontSize(10);
         doc.text('Otros campos:', 20, y); y += 6;
 
@@ -142,12 +150,12 @@ document.getElementById('generateBtn').addEventListener('click', async function 
           }
         }
 
-        // === Firma ===
+        // Firma
         y += 6;
         doc.setFontSize(12);
         doc.text('Recibí Conforme: ___________________________', 20, y); y += 10;
 
-        // === Pie de página ===
+        // Pie de página
         doc.setFontSize(8);
         doc.text('La mercadería será transportada bajo exclusiva responsabilidad del transportista.', 20, 280);
         doc.text('Seguro de mercadería por cuenta de Syngenta.', 20, 285);
