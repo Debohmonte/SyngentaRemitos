@@ -35,17 +35,15 @@
         return valor;
       };
 
-      // 🔢 Número base para remitos autoincrementales
-      let ultimoRemito = 24291;
-      const prefijoRemito = '0283-';
-
       const doc = new jsPDF();
+      const remitoBase = 24291; // Cambiá este número si querés continuar desde otro
+      const prefijoRemito = '0283-';
 
       json.forEach((originalRow, index) => {
         if (!originalRow || Object.keys(originalRow).length === 0) return;
         if (index !== 0) doc.addPage();
 
-        // 🔧 Normalizar claves y forzar valores a string
+        // 🔧 Normalizar claves
         const row = {};
         for (const [key, value] of Object.entries(originalRow)) {
           const cleanKey = key
@@ -59,7 +57,7 @@
         const usados = new Set();
 
         // === ENCABEZADO ===
-        const numeroRemito = ultimoRemito + index;
+        const numeroRemito = remitoBase + index;
         const remitoFormateado = `${prefijoRemito}${String(numeroRemito).padStart(8, '0')}`;
 
         doc.setFontSize(16);
@@ -77,7 +75,7 @@
         doc.setFontSize(10);
         let y = 40;
 
-        // === SYNGENTA (con valores fijos) ===
+        // === VALORES FIJOS SYNGENTA ===
         const valoresFijos = {
           'C.U.I.T.': '30-64632845-0',
           'Ingresos Brutos (CM)': '901-962580-1',
@@ -95,12 +93,10 @@
           'Fecha de Vencimiento del C.A.I.',
           'C.A.I. Nº'
         ];
+
         camposSyngenta.forEach(campo => {
           let valor = valoresFijos[campo] || row[campo] || '';
-          if (
-            campo.toLowerCase().includes('fecha') ||
-            campo.toLowerCase().includes('inicio de actividades')
-          ) {
+          if (campo.toLowerCase().includes('fecha') || campo.toLowerCase().includes('inicio de actividades')) {
             valor = convertirFecha(valor);
           }
           doc.text(`${campo}: ${valor}`, 20, y);
@@ -161,15 +157,11 @@
         for (const key in row) {
           if (usados.has(key)) continue;
           let valor = row[key];
-          if (
-            key.toLowerCase().includes('fecha') ||
-            key.toLowerCase().includes('inicio de actividades')
-          ) {
+          if (key.toLowerCase().includes('fecha') || key.toLowerCase().includes('inicio de actividades')) {
             valor = convertirFecha(valor);
           }
           doc.text(`${key}: ${valor}`, 20, y);
           y += 6;
-
           if (y > 270) {
             doc.addPage();
             y = 20;
@@ -188,5 +180,3 @@
 
       doc.save('Remitos_Syngenta.pdf');
     });
-
-
