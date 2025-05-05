@@ -18,16 +18,15 @@ document.getElementById('generateBtn').addEventListener('click', async function 
         return;
       }
 
-      // 🔁 Conversor de fechas
+      // 🔁 Función para convertir fechas
       const convertirFecha = (valor) => {
         if (!valor) return '';
-        // número de Excel
-        if (!isNaN(valor) && typeof valor === 'number') {
+        const numero = Number(valor);
+        if (!isNaN(numero)) {
           const epoch = new Date(Date.UTC(1899, 11, 30));
-          const fecha = new Date(epoch.getTime() + valor * 86400000);
+          const fecha = new Date(epoch.getTime() + numero * 86400000);
           return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
         }
-        // texto tipo "2024-03-01"
         if (typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(valor)) {
           const [y, m, d] = valor.split('-');
           return `${d}/${m}/${y}`;
@@ -50,16 +49,14 @@ document.getElementById('generateBtn').addEventListener('click', async function 
         doc.setFontSize(12);
         doc.text(`Número Interno: ${row['Número Interno:'] || ''}`, 105, 22, { align: 'center' });
 
-        doc.setFontSize(10);
-        let y = 30;
-
-        // === Transporte + Fecha Emisión
-        const transporte = row['Transporte:'] || '';
         const fechaEmision = convertirFecha(row['Fecha de Emisión:']);
-        doc.text(`Transporte: ${transporte}`, 20, y); y += 6;
-        doc.text(`Fecha de Emisión: ${fechaEmision}`, 20, y); y += 6;
-        usados.add('Transporte:');
+        doc.text(`Fecha de Emisión: ${fechaEmision}`, 105, 29, { align: 'center' });
+        usados.add('Remito N°:');
+        usados.add('Número Interno:');
         usados.add('Fecha de Emisión:');
+
+        doc.setFontSize(10);
+        let y = 40;
 
         // === Syngenta ===
         const camposFijos = [
@@ -85,6 +82,7 @@ document.getElementById('generateBtn').addEventListener('click', async function 
           'Dirección receptor:',
           'Teléfono Recptor:',
           'Pedido:',
+          'Transporte:',
           'Nro. Transporte:'
         ];
         camposEmisor.forEach(campo => {
@@ -144,11 +142,12 @@ document.getElementById('generateBtn').addEventListener('click', async function 
           }
         }
 
-        // === Firma y pie ===
+        // === Firma ===
         y += 6;
         doc.setFontSize(12);
         doc.text('Recibí Conforme: ___________________________', 20, y); y += 10;
 
+        // === Pie de página ===
         doc.setFontSize(8);
         doc.text('La mercadería será transportada bajo exclusiva responsabilidad del transportista.', 20, 280);
         doc.text('Seguro de mercadería por cuenta de Syngenta.', 20, 285);
@@ -156,4 +155,3 @@ document.getElementById('generateBtn').addEventListener('click', async function 
 
       doc.save('Remitos_Syngenta.pdf');
     });
-
