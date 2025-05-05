@@ -44,10 +44,10 @@ document.getElementById('generateBtn').addEventListener('click', async function 
 
         // === ENCABEZADO ===
         doc.setFontSize(16);
-        doc.text(`Remito N° ${row['Remito N°:'] || '(sin número)'}`, 105, 15, { align: 'center' });
+        doc.text(`Remito N° ${row['Remito N°: '] || '(sin número)'}`, 105, 15, { align: 'center' });
 
         doc.setFontSize(12);
-        doc.text(`Número Interno: ${row['Número Interno:'] || ''}`, 105, 22, { align: 'center' });
+        doc.text(`Número Interno: ${row['Número Interno: '] || ''}`, 105, 22, { align: 'center' });
 
         const fechaEmision = convertirFecha(row['Fecha de Emisión:']);
         doc.text(`Fecha de Emisión: ${fechaEmision}`, 105, 29, { align: 'center' });
