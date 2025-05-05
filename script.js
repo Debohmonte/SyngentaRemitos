@@ -1,3 +1,4 @@
+
     document.getElementById('generateBtn').addEventListener('click', async function () {
       const input = document.getElementById('fileInput');
       if (!input.files.length) {
@@ -39,15 +40,14 @@
         if (!originalRow || Object.keys(originalRow).length === 0) return;
         if (index !== 0) doc.addPage();
 
-        // Limpieza de claves y valores
         const row = {};
         for (const [key, value] of Object.entries(originalRow)) {
           const cleanKey = key
             .replace(/[:\s]+$/g, '')
             .replace(/[:\s]+/g, ' ')
             .trim();
-          const cleanValue = typeof value === 'number' ? String(value) : (value || '').toString();
-          row[cleanKey] = cleanValue;
+          const stringValue = typeof value === 'number' ? String(value) : (value || '').toString();
+          row[cleanKey] = stringValue;
         }
 
         const usados = new Set();
@@ -175,4 +175,5 @@
 
       doc.save('Remitos_Syngenta.pdf');
     });
+
 
