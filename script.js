@@ -33,7 +33,7 @@ document.getElementById('generateBtn').addEventListener('click', async function 
 
         // Encabezado
         doc.setFontSize(16);
-        doc.text(`Remito N° ${row['Remito N°:'] || row['Número Interno:'] || '(sin número)'}`, 105, 15, { align: 'center' });
+        doc.text(`Remito N° ${row['Número Interno:'] || '(sin número)'}`, 105, 15, { align: 'center' });
 
         doc.setFontSize(10);
         let y = 25;
