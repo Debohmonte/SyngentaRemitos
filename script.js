@@ -1,4 +1,3 @@
-
     document.getElementById('generateBtn').addEventListener('click', async function () {
       const input = document.getElementById('fileInput');
       if (!input.files.length) {
@@ -19,6 +18,7 @@
         return;
       }
 
+      // 🔁 Función para convertir fechas
       const convertirFecha = (valor) => {
         if (!valor) return '';
         const numero = Number(valor);
@@ -40,14 +40,15 @@
         if (!originalRow || Object.keys(originalRow).length === 0) return;
         if (index !== 0) doc.addPage();
 
+        // 🔧 Normalizar claves y forzar valores a string
         const row = {};
         for (const [key, value] of Object.entries(originalRow)) {
           const cleanKey = key
-            .replace(/[:\s]+$/g, '')
-            .replace(/[:\s]+/g, ' ')
+            .replace(/[:]+$/g, '')         // elimina ":" al final
+            .replace(/\s{2,}/g, ' ')       // reemplaza espacios múltiples
+            .replace(/[:]/g, '')           // elimina ":" intermedios
             .trim();
-          const stringValue = typeof value === 'number' ? String(value) : (value || '').toString();
-          row[cleanKey] = stringValue;
+          row[cleanKey] = value != null ? value.toString() : '';
         }
 
         const usados = new Set();
@@ -145,7 +146,6 @@
 
         for (const key in row) {
           if (usados.has(key)) continue;
-
           let valor = row[key];
           if (
             key.toLowerCase().includes('fecha') ||
@@ -153,7 +153,6 @@
           ) {
             valor = convertirFecha(valor);
           }
-
           doc.text(`${key}: ${valor}`, 20, y);
           y += 6;
 
@@ -175,5 +174,4 @@
 
       doc.save('Remitos_Syngenta.pdf');
     });
-
 
